@@ -15,6 +15,14 @@ var fileName = './berlin.osm.pbf';
 
 var blob = schema['OSMPBF.Blob'];
 
+blob.prototype.zlibData = function() {
+	return null;
+};
+
+blob.prototype.lzmaData = function() {
+	return null;
+}
+
 var fs = require('fs');
 //fs.open(fileName,'r',start);
 var fd;
@@ -33,7 +41,7 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 				blobHeaderSize |= buffer[i];
 				console.log("Bla: " + blobHeaderSize);
 			}
-			var tmp = Buffer(blobHeaderSize);
+			var tmp = new Buffer(blobHeaderSize);
 			//fs.read(fd,tmp,0,blobHeaderSize,null,blobHeaderCallback);
 			fs.read(fd, tmp, 0, blobHeaderSize, null, function(error, bytesRead, buffer) {
 				if(bytesRead == blobHeaderSize)	{
@@ -47,7 +55,26 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 						else {
 							if(bytesRead == aBlobHeader.datasize) {
 								var aBlob = blob.parse(buffer);
-								console.log(aBlob);	
+								console.log(aBlob);
+								var data = aBlob.raw;
+							    if(!data) {
+									if(aBlob.zlibData) {
+										data = require('zlib').inflate(aBlob.zlibData);
+											
+										//var gunzip = new require('compress').Gunzip();
+										//gunzip.write(aBlob.zlibData, function(error, data) {
+										//	console.log(data);
+										//});
+									} 
+									else if(aBlob.lzmaData) {}	
+									else {
+										//var bunzip = new require('compress').Bunzip();
+										//bunzip.write(aBlob.bzipData2, function(error, data) {	
+										//});	
+									}	
+								}	
+									
+								console.log(data);	
 							}
 							else {
 								console.log('bytesRead != aBlobHeader.datasize');
@@ -67,7 +94,7 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 };
 
 var start = function(err, fd2) {
-	var tmp = Buffer(4);
+	var tmp = new Buffer(4);
 	if(err) {
 		console.log(err);
 		return;	
@@ -81,34 +108,3 @@ var blobHeaderCallback = function(error, bytesRead, buffer) {
 	
 }
 fs.open(fileName,'r',start);
-//var inputStream = require('fs').createReadStream(fileName);
-
-//inputStream.on('error',function(error){
-//	console.log(error);		
-//})
-var first=true;
-//inputStream.on('data',function(data){
-//	//console.log(JSON.stringify(data));		
-//	if(first) {
-//		var i;
-//		var	blobHeaderSize = 13;
-//		//for(i=1;i<4;i++) {
-//		//	console.log(data[i]);
-//		//	blobHeaderSize <<= 8;
-//		//	blobHeaderSize |= data[i];
-//		//	console.log("Bla: " + blobHeaderSize);
-//		//}
-//		console.log(blobHeaderSize);
-//		first=false;
-//		var tmp = new Buffer(blobHeaderSize);
-//		if((data.length - 4)< blobHeaderSize) {
-//			console.log('not enough data');	
-//		}
-//		//tmp = data.slice(4,17);
-//		console.log(tmp);
-//		data.copy(tmp,0,4,17);
-//		//console.log(JSON.stringify(tmp));
-//		var aBlobHeader = blobHeader.parse(tmp);
-//		console.log(aBlobHeader);
-//	}	
-//})
