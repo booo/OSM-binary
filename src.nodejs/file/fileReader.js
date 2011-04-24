@@ -34,20 +34,20 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 	}
 	else {
 		if(bytesRead == 4) {
-			console.log(buffer);
+			//console.log(buffer);
 			var i;
 			var	blobHeaderSize = 0;
 			for(i=1;i<4;i++) {
-				console.log(buffer[i]);
+				//console.log(buffer[i]);
 				blobHeaderSize <<= 8;
 				blobHeaderSize |= buffer[i];
-				console.log("Bla: " + blobHeaderSize);
+				//console.log("Bla: " + blobHeaderSize);
 			}
 			var tmp = new Buffer(blobHeaderSize);
 			//fs.read(fd,tmp,0,blobHeaderSize,null,blobHeaderCallback);
 			fs.read(fd, tmp, 0, blobHeaderSize, null, function(error, bytesRead, buffer) {
 				if(bytesRead == blobHeaderSize)	{
-					console.log(blobHeader.parse(buffer));
+					//console.log(blobHeader.parse(buffer));
 					var aBlobHeader = blobHeader.parse(buffer);
 					if(aBlobHeader.indexdata) {
 						//console.log(indexdata);
@@ -104,7 +104,7 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 													lon : nodes.lon[j]
 												};
 												//TODO emit node
-												console.log(aNode);
+												//console.log(aNode);
 											}
 										}
 										//else {} perhaps use else instead?
@@ -135,10 +135,13 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 				else {
 					console.log('bytesRead != blobHeaderSize');
 				}
-					});
+			});
+		}
+		else if(bytesRead == 0) {
+			console.log('end of file');
 		}
 		else {
-			console.log('could not read blobHeaderSize');
+			console.log('could not read blobHeaderSize\n bytesRead:' + bytesRead);
 		}
 	}
 };
