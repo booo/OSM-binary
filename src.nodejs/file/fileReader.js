@@ -60,6 +60,7 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 						}
 						else {
 							if(bytesRead == aBlobHeader.datasize) {
+								//perhaps call next fs.read() here for performance?
 								var aBlob = blob.parse(buffer);
 								//console.log(aBlob);
 								var data = aBlob.raw;
@@ -86,24 +87,42 @@ var blobHeaderSizeCallback = function(error, bytesRead, buffer){
 								else if(aBlobHeader.type === 'OSMData') {
 									var aBlobPrimitiveBlock = blobPrimitiveBlock.parse(data);
 									//console.log(aBlobPrimitiveBlock);
-									for(var i in aBlobPrimitiveBlock.primitivegroup){
+									for(i=0;i<aBlobPrimitiveBlock.primitivegroup.length;i++){
 										debugger;
 										var aPrimitiveGroup = aBlobPrimitiveBlock.primitivegroup[i];
 										//console.log(aPrimitiveGroup);
 										if(aPrimitiveGroup.dense) {
 											//console.log(aPrimitiveGroup.dense);
 											var nodes = aPrimitiveGroup.dense;
+											var aNode = {};
+											console.log(nodes.id);
 											var j;
-											for(j in nodes.id) {
+											for(j=0;j<nodes.id.length;j++) {
 												//loop through node ids
 												//create nodes
+												console.log(nodes.id[j]);
 												//console.log(aPrimitiveGroup.dense.id[j]);
-												var aNode = {
-													id : nodes.id[j],
-													lat : nodes.lat[j],
-													lon : nodes.lon[j]
-												};
-												//TODO emit node
+												if(aNode.id !== nodes.id[j]) {
+													if(j > 0){
+														//console.log(aNode);
+													}
+													//TODO emit node
+													aNode = {
+														id  : nodes.id[j],
+														lat : nodes.lat[j],
+														lon : nodes.lon[j],
+													};
+													//console.log(nodes);
+													if(nodes.denseinfo) {
+														//console.log(nodes.denseinfo);
+														aNode.version   = nodes.denseinfo.version[j],
+														aNode.timestamp = nodes.denseinfo.timestamp[j],
+														aNode.changeset = nodes.denseinfo.changeset[j],
+														aNode.uid       = nodes.denseinfo.uid[j],
+														aNode.user_id   = nodes.denseinfo.userSid[j]
+													}
+
+												}
 												//console.log(aNode);
 											}
 										}
@@ -157,7 +176,5 @@ var start = function(err, fd2) {
 		fs.read(fd,tmp,0,4,null,blobHeaderSizeCallback);
 	}
 };
-var blobHeaderCallback = function(error, bytesRead, buffer) {
 
-}
 fs.open(fileName,'r',start);
